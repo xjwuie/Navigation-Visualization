@@ -15,6 +15,8 @@ public class UnitContainer : MonoBehaviour {
 
     GameObject plane;
 
+    public float waitTime = 0.1f;
+
     float planeWidth, planeHeight;
     float topPos, bottomPos, leftPos, rightPos;
 
@@ -27,7 +29,7 @@ public class UnitContainer : MonoBehaviour {
     List<Unit> route;
     Unit startUnit, destUnit;
 
-    Material materialNormal, materialBlock, materialRoute;
+    Material materialNormal, materialBlock, materialRoute, materialAccelerate, materialDecelerate;
 	
 	void Start () {
         units = new List<List<Unit>>();
@@ -44,6 +46,8 @@ public class UnitContainer : MonoBehaviour {
         materialNormal = Resources.Load<Material>("Materials/UnitNormal");
         materialBlock = Resources.Load<Material>("Materials/UnitBlock");
         materialRoute = Resources.Load<Material>("Materials/UnitRoute");
+        materialAccelerate = Resources.Load<Material>("Materials/UnitAccelerate");
+        materialDecelerate = Resources.Load<Material>("Materials/UnitDecelerate");
     }
 
     void Update() {
@@ -145,7 +149,6 @@ public class UnitContainer : MonoBehaviour {
 
     public void SetNormal(Vector2 o, float radius) {
         List<int> startEndIndexList = GetStartEndIndex(o, radius);
-        //print(new Vector4(startEndIndexList[0], startEndIndexList[1], startEndIndexList[2], startEndIndexList[3]));
         for (int i = startEndIndexList[0]; i <= startEndIndexList[1]; ++i)
         {
             for (int j = startEndIndexList[2]; j <= startEndIndexList[3]; ++j)
@@ -156,6 +159,43 @@ public class UnitContainer : MonoBehaviour {
                 {
                     tmp.SetMaterial(materialNormal);
                     tmp.type = 0;
+                    tmp.moveCost = 0;
+                }
+            }
+        }
+    }
+
+    public void SetAccelerate(Vector2 o, float radius, float cost) {
+        List<int> startEndIndexList = GetStartEndIndex(o, radius);
+        for (int i = startEndIndexList[0]; i <= startEndIndexList[1]; ++i)
+        {
+            for (int j = startEndIndexList[2]; j <= startEndIndexList[3]; ++j)
+            {
+                Unit tmp = units[i][j];
+                float dis = Distance(tmp, o);
+                if (dis <= radius)
+                {
+                    tmp.SetMaterial(materialAccelerate);
+                    tmp.type = 0;
+                    tmp.moveCost = cost;
+                }
+            }
+        }
+    }
+
+    public void SetDecelerate(Vector2 o, float radius, float cost) {
+        List<int> startEndIndexList = GetStartEndIndex(o, radius);
+        for (int i = startEndIndexList[0]; i <= startEndIndexList[1]; ++i)
+        {
+            for (int j = startEndIndexList[2]; j <= startEndIndexList[3]; ++j)
+            {
+                Unit tmp = units[i][j];
+                float dis = Distance(tmp, o);
+                if (dis <= radius)
+                {
+                    tmp.SetMaterial(materialDecelerate);
+                    tmp.type = 0;
+                    tmp.moveCost = cost;
                 }
             }
         }
@@ -166,14 +206,14 @@ public class UnitContainer : MonoBehaviour {
             return;
         GetRoute();
         //foreach(Unit u in route) u.SetMaterial(materialRoute);
-        StartCoroutine(Show());
+        StartCoroutine(Show(waitTime));
     }
 
-    IEnumerator Show() {
+    IEnumerator Show(float time) {
         foreach (Unit u in route)
         {
             u.SetMaterial(materialRoute);
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(time);
         }
     }
 
@@ -196,6 +236,15 @@ public class UnitContainer : MonoBehaviour {
         route.Clear();
         List<List<int>> map = GenerateMap();
         AStar.AStar aStar = new AStar.AStar(map);
+        for(int i = 0; i < rowNum; ++i)
+        {
+            for (int j = 0; j < colNum; ++j)
+            {
+                aStar.SetMoveCost(i, j, units[i][j].moveCost);
+                //print(new Vector3(i, j, units[i][j].moveCost));
+            }
+                
+        }
         aStar.SetStart(startUnit.rowIndex, startUnit.colIndex);
         aStar.SetDest(destUnit.rowIndex, destUnit.colIndex);
         if (aStar.Find())
@@ -206,6 +255,10 @@ public class UnitContainer : MonoBehaviour {
                 int[] tmp = routeStack.Pop();
                 route.Add(units[tmp[0]][tmp[1]]);
             }
+        }
+        else
+        {
+            print("failed");
         }
     }
 

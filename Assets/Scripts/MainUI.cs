@@ -11,7 +11,7 @@ public class MainUI : MonoBehaviour {
     InputField setSizeInputField;
 
     Button selectBrushButton;
-    ToggleGroup brushSizeGroup;
+    ToggleGroup brushSizeGroup, brushTypeGroup;
     Dictionary<string, float> brushSizeTable = new Dictionary<string, float>() { { "Small", 3f }, { "Mid", 7f }, { "Big", 13f } };
 
     Button setStartButton, setDestButton, searchButton;
@@ -30,6 +30,7 @@ public class MainUI : MonoBehaviour {
             SetBrush();
         });
         brushSizeGroup = transform.Find("RightUI/Brush/BrushSize").GetComponent<ToggleGroup>();
+        brushTypeGroup = transform.Find("RightUI/Brush/BrushType").GetComponent<ToggleGroup>();
 
         setStartButton = transform.Find("RightUI/StartDest/SetStartButton").GetComponent<Button>();
         setStartButton.onClick.AddListener(new UnityEngine.Events.UnityAction(SetStart));
@@ -42,10 +43,6 @@ public class MainUI : MonoBehaviour {
         resetButton.onClick.AddListener(new UnityEngine.Events.UnityAction(ResetMap));
 	}
 	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
     void FillContainer() {
         int rowNum = int.Parse(setSizeInputField.text);
@@ -56,16 +53,25 @@ public class MainUI : MonoBehaviour {
     }
 
     void SetBrush() {
-        IEnumerable<Toggle> activeToggle = brushSizeGroup.ActiveToggles();
+        IEnumerable<Toggle> activeSizeToggle = brushSizeGroup.ActiveToggles();
         string sizeName;
         float brushSize;
-        foreach (Toggle t in activeToggle)
+        foreach (Toggle t in activeSizeToggle)
         {
             sizeName = t.transform.GetComponentInChildren<Text>().text;
             brushSize = brushSizeTable[sizeName];
+            
             GameManager._instance.SetBrush(brushSize);
         }
-        
+
+        var activeTypeToggle = brushTypeGroup.ActiveToggles();
+        string typeName;
+        foreach (Toggle tt in activeTypeToggle)
+        {
+            typeName = tt.transform.GetComponentInChildren<Text>().text;
+            GameManager._instance.SetBrushType(typeName);
+        }
+
     }
 
     void SetStart() {

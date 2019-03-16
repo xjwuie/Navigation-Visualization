@@ -2,14 +2,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum BrushType
+{
+    normal,
+    obstacle,
+    accelerate,
+    decelerate
+}
 
 public class Brush : MonoBehaviour {
 
     Transform planeTrans;
     float topPos, bottomPos, leftPos, rightPos;
     UnitContainer containerScript;
-	// Use this for initialization
-	void Start () {
+    public BrushType type = BrushType.normal;
+    Dictionary<BrushType, float> brushTypeTable = new Dictionary<BrushType, float>()
+    { { BrushType.normal, 0f }, { BrushType.accelerate, -0.5f }, { BrushType.decelerate, 1f }, {BrushType.obstacle, 0f } };
+    // Use this for initialization
+    void Start () {
         containerScript = GameObject.Find("UnitContainer").GetComponent<UnitContainer>();
         planeTrans = GameObject.Find("Plane").GetComponent<Transform>();
         topPos = planeTrans.position.z + planeTrans.localScale.z * 5;
@@ -29,7 +39,16 @@ public class Brush : MonoBehaviour {
             transform.position = new Vector3(mousePos.x, 2f, mousePos.y);
             if (Input.GetMouseButton(0))
             {
-                containerScript.SetBlock(mousePos, transform.localScale.x / 2);
+                if(type == BrushType.obstacle)
+                {
+                    containerScript.SetBlock(mousePos, transform.localScale.x / 2);
+                }else if(type == BrushType.accelerate)
+                {
+                    containerScript.SetAccelerate(mousePos, transform.localScale.x / 2, brushTypeTable[type]);
+                }else if(type == BrushType.decelerate)
+                {
+                    containerScript.SetDecelerate(mousePos, transform.localScale.x / 2, brushTypeTable[type]);
+                }
             }
             if (Input.GetMouseButton(1))
             {
@@ -37,4 +56,9 @@ public class Brush : MonoBehaviour {
             }
         }
 	}
+
+    public void SetBrushType(string typeName) {
+        print(typeName);
+        type = (BrushType)System.Enum.Parse(typeof(BrushType), typeName.ToLower());
+    }
 }

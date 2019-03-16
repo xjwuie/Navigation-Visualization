@@ -21,6 +21,7 @@ namespace AStar
         public MapUnit parent;
         public double G, H;
         public double F { get { return G + H; } }
+        public double moveCost = 0;
 
         public MapUnit(int x, int y, int type) {
             this.x = x;
@@ -96,16 +97,13 @@ namespace AStar
                 openList.Remove(minFUnit);
                 closeList.Add(minFUnit);
 
-                var list = GetAround(minFUnit.x, minFUnit.y);
+                GetAround(minFUnit.x, minFUnit.y);
                 if (closeList.Contains(destination))
                 {
                     Console.WriteLine("found");
                     return true;
                 }
             }
-
-
-
             return false;
         }
 
@@ -130,6 +128,24 @@ namespace AStar
             }
             destination = tmp;
             return true;
+        }
+
+        public void SetMoveCost(int x, int y, double cost) {
+            mapUnits[x][y].moveCost = cost;
+        }
+
+        public void ResetMoveCost(int x, int y) {
+            mapUnits[x][y].moveCost = 0;
+        }
+
+        public void ResetAllMoveCost() {
+            foreach(var list in mapUnits)
+            {
+                foreach(MapUnit elem in list)
+                {
+                    elem.moveCost = 0;
+                }
+            }
         }
 
         MapUnit GetUnit(int x, int y, int offsetX, int offsetY) {
@@ -166,7 +182,7 @@ namespace AStar
                     continue;
                 }
 
-                double G = Distance(elem, p) + p.G;
+                double G = Distance(elem, p) + p.G + elem.moveCost;
                 double H = Distance(elem, destination);
 
                 if (openList.Contains(elem))

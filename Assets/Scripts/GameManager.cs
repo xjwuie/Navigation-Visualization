@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour {
-    public static GameManager _instance;
+    public static GameManager _instance {
+        get; private set;
+    }
 
     GameObject unitContainer;
     GameObject brush;
@@ -39,6 +41,10 @@ public class GameManager : MonoBehaviour {
         brush.SetActive(true);
         brush.transform.localScale = new Vector3(brushSize, 0.1f, brushSize);
         unitContainer.GetComponent<UnitContainer>().mouse = MouseMode.brush;
+    }
+
+    public void SetBrushType(string brushType) {
+        brush.GetComponent<Brush>().SetBrushType(brushType);
     }
 
     public void SetStart() {

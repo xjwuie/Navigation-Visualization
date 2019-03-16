@@ -11,7 +11,8 @@ public class Unit : MonoBehaviour {
     public int rowIndex { get; private set; }
     public int colIndex { get; private set; }
 
-    public int type;
+    public int type = 0;
+    public float moveCost = 0;
 
     public void SetPos(float x, float y) {
         this.x = x;
